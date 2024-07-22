@@ -20,7 +20,7 @@ const useAudioAnalyzer = () => {
 
   const initAudioContext = useCallback(() => {
     if (!audioContextRef.current) {
-      audioContextRef.current = new (window.AudioContext || window.AudioContext)();
+      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
       analyzerRef.current = audioContextRef.current.createAnalyser();
       analyzerRef.current.fftSize = 256;
       console.log('AudioContext initialized');
@@ -37,9 +37,14 @@ const useAudioAnalyzer = () => {
       sourceRef.current.disconnect();
     }
 
-    sourceRef.current = audioContextRef.current.createMediaElementSource(audioElement);
-    sourceRef.current.connect(analyzerRef.current);
-    analyzerRef.current.connect(audioContextRef.current.destination);
+    try {
+      sourceRef.current = audioContextRef.current.createMediaElementSource(audioElement);
+      sourceRef.current.connect(analyzerRef.current);
+      analyzerRef.current.connect(audioContextRef.current.destination);
+    } catch (error) {
+      console.error('Error connecting audio:', error);
+      return;
+    }
 
     const bufferLength = analyzerRef.current.frequencyBinCount;
     const dataArray = new Uint8Array(bufferLength);
@@ -56,9 +61,6 @@ const useAudioAnalyzer = () => {
 
     updateAudioData();
     console.log('Audio analysis started');
-
-    audioElement.addEventListener('pause', () => setAudioData(null));
-    audioElement.addEventListener('ended', () => setAudioData(null));
   }, [initAudioContext, setAudioData]);
 
   useEffect(() => {
