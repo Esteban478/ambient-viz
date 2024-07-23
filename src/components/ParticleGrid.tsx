@@ -7,7 +7,7 @@ import THREE from 'three';
 
 interface ParticleGridProps {
   gridSize: number;
-  pointerPosition: { x: number; y: number };
+  touchPositions: { x: number; y: number }[];
 }
 
 const vertexShader = `
@@ -27,18 +27,21 @@ const vertexShader = `
     
     // Audio reactivity
     float audioValue = uAudioData[int(mod(vertexIndex, 16.0))];
-    pos.z += sin(uTime + pos.x * 0.1 + pos.y * 0.1) * 0.1 + audioValue * 0.2;
+    pos.z += cos(uTime + pos.x * 0.1 + pos.y * 0.1) * 0.01 + audioValue * 0.6;
     
     // Mouse interaction
     vec3 toMouse = uMousePosition - pos;
     float distToMouse = length(toMouse);
-    if (distToMouse < 0.5) {
-      float pushStrength = (1.0 - distToMouse / 0.5) * 0.2;
+    if (distToMouse < 0.2) {
+      float pushStrength = (0.8 - distToMouse / 0.5) * 0.2;
       pos -= normalize(toMouse) * pushStrength;
+    } else if (distToMouse < 0.5) {
+      float pushStrength = (0.5 - distToMouse / 0.5) * 0.2;
+      pos += normalize(toMouse) * pushStrength;
     }
     
     vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
-    gl_PointSize = 3.0 * (1.0 / -mvPosition.z);
+    gl_PointSize = 2.0 * (1.0 / -mvPosition.z);
     gl_Position = projectionMatrix * mvPosition;
   }
 `;
@@ -124,7 +127,7 @@ const ParticleGrid: React.FC<ParticleGridProps> = ({ gridSize }) => {
   const handlePointerMove = (event: ThreeEvent<PointerEvent>) => {
     const x = (event.clientX / window.innerWidth) * 2 - 1;
     const y = -(event.clientY / window.innerHeight) * 2 + 1;
-    const vector = new Vector3(x, y, 0.5);
+    const vector = new Vector3(x, y, 0.65);
     vector.unproject(camera);
     setMousePosition(vector);
   };

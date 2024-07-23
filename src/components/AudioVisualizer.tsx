@@ -1,16 +1,18 @@
 import React from 'react';
 import GradientBackground from './GradientBackground';
 import ParticleGrid from './ParticleGrid';
+import AudioReactiveSurface from './AudioReactiveSurface';
 
 interface AudioVisualizerProps {
-  pointerPosition: { x: number; y: number };
+  touchPositions: { x: number; y: number }[];
 }
 
-const AudioVisualizer: React.FC<AudioVisualizerProps> = ({ pointerPosition }) => {
+const AudioVisualizer: React.FC<AudioVisualizerProps> = ({ touchPositions }) => {
   return (
     <>
       <GradientBackground />
-      <ParticleGrid gridSize={100} pointerPosition={pointerPosition} />
+      <AudioReactiveSurface gridSize={1000} touchPositions={touchPositions} />
+      <ParticleGrid gridSize={700} touchPositions={touchPositions} />
     </>
   );
 };

@@ -37,6 +37,10 @@ const useAudioAnalyzer = () => {
       sourceRef.current.disconnect();
     }
 
+    if (audioContextRef.current.state === 'suspended') {
+      audioContextRef.current.resume();
+    }
+
     try {
       sourceRef.current = audioContextRef.current.createMediaElementSource(audioElement);
       sourceRef.current.connect(analyzerRef.current);

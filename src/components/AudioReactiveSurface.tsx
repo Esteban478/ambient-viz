@@ -5,6 +5,7 @@ import { useAudioStore } from '@/hooks/useAudioAnalyzer';
 
 interface AudioReactiveSurfaceProps {
   gridSize: number;
+  touchPositions: { x: number; y: number }[];
 }
 
 const vertexShader = `
@@ -29,7 +30,7 @@ const fragmentShader = `
   
   void main() {
     vec3 color = mix(uColorA, uColorB, vUv.x);
-    color = mix(color, uColorC, vElevation * 2.0 + 0.5);
+    color = mix(color, uColorC, vElevation * 2.0 + 0.2);
     gl_FragColor = vec4(color, 1.0);
   }
 `;
@@ -40,7 +41,7 @@ const AudioReactiveSurface: React.FC<AudioReactiveSurfaceProps> = ({ gridSize })
   const materialRef = useRef<THREE.ShaderMaterial>(null);
 
   const geometry = useMemo(() => {
-    return new THREE.PlaneGeometry(2, 2, gridSize - 1, gridSize - 1);
+    return new THREE.PlaneGeometry(4, 2, gridSize - 1, gridSize - 1);
   }, [gridSize]);
 
   const uniforms = useMemo(() => ({
@@ -68,7 +69,7 @@ const AudioReactiveSurface: React.FC<AudioReactiveSurfaceProps> = ({ gridSize })
         const waveY = Math.sin(y * 5 + time) * 0.1;
         
         // Combine audio reactivity with wave motion
-        positions[i + 2] = waveX + waveY + audioValue * 0.5;
+        positions[i + 2] = waveX + waveY + audioValue * 0.4;
       }
 
       meshRef.current.geometry.attributes.position.needsUpdate = true;

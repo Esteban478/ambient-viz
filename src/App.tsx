@@ -12,7 +12,7 @@ function App() {
   const { user, setUser } = useAuthStore();
   const [audioLoaded, setAudioLoaded] = useState(false);
   const [isAuthChecked, setIsAuthChecked] = useState(false);
-  const [pointerPosition, setPointerPosition] = useState({ x: 0, y: 0 });
+  const [touchPositions, setTouchPositions] = useState<{ x: number; y: number }[]>([]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -34,10 +34,12 @@ function App() {
     }
   };
 
-  const handlePointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
-    const x = event.clientX / window.innerWidth * 2 - 1;
-    const y = -(event.clientY / window.innerHeight) * 2 + 1;
-    setPointerPosition({ x, y });
+  const handleTouchMove = (event: React.TouchEvent<HTMLDivElement>) => {
+    const newTouchPositions = Array.from(event.touches).map(touch => ({
+      x: (touch.clientX / window.innerWidth) * 2 - 1,
+      y: -(touch.clientY / window.innerHeight) * 2 + 1
+    }));
+    setTouchPositions(newTouchPositions);
   };
 
   if (!isAuthChecked) {
@@ -45,24 +47,20 @@ function App() {
   }
 
   return (
-    <div className="h-screen w-full bg-black relative">
+    <div className="h-screen w-full bg-black relative" onTouchMove={handleTouchMove}>
       {user ? (
         <>
-          <div className="absolute top-4 left-4 z-10 bg-white p-4 rounded">
+          <div className="absolute bottom-4 left-4 right-4 z-10 bg-white p-4 rounded">
             <AudioPlayer onAudioLoad={handleAudioLoad} />
           </div>
           <div className="absolute top-4 right-4 z-10 bg-white p-4 rounded">
             <UserProfile />
             <button onClick={handleLogout} className="mt-2 bg-red-500 text-white px-4 py-2 rounded">Logout</button>
           </div>
-          {audioLoaded ? (
-            <Canvas camera={{ position: [0, 0, 1], fov: 75 }} onPointerMove={handlePointerMove}>
-              <AudioVisualizer pointerPosition={pointerPosition} />
+          {audioLoaded && (
+            <Canvas camera={{ position: [0, 0, 1], fov: 75 }}>
+              <AudioVisualizer touchPositions={touchPositions} />
             </Canvas>
-          ) : (
-            <div className="h-full flex items-center justify-center text-white">
-              Please upload and play an audio file to start visualization.
-            </div>
           )}
         </>
       ) : (
