@@ -22,14 +22,28 @@
 
 <script>
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/service-worker.js')
-        .then((registration) => {
-          console.log('Service Worker registered:', registration);
-        })
-        .catch((error) => {
-          console.log('Service Worker registration failed:', error);
+    navigator.serviceWorker.register('/service-worker.js').then(reg => {
+      reg.addEventListener('updatefound', () => {
+        const newWorker = reg.installing;
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed') {
+            if (navigator.serviceWorker.controller) {
+              // New content is available, refresh the page
+              if (confirm('New version available! Refresh now?')) {
+                window.location.reload();
+              }
+            }
+          }
         });
+      });
+    });
+
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!refreshing) {
+        window.location.reload();
+        refreshing = true;
+      }
     });
   }
 </script>

@@ -2,7 +2,7 @@
   "name": "Audio Visualizer",
   "short_name": "AV",
   "description": "An interactive audio visualizer with particle effects",
-  "start_url": "/",
+  "start_url": "/?version=0.0.1/",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#000000",
