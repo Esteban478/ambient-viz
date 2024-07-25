@@ -1,16 +1,27 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from '@/config/firebase';
 import { useAuthStore } from '@/store/authStore';
-import { useGestureStore } from '@/hooks/useGesture';
 import AuthForm from '@/components/AuthForm';
 import UserProfile from '@/components/UserProfile';
 import AudioVisualizer from '@/components/AudioVisualizer';
 import AudioPlayer from '@/components/AudioPlayer';
+import { useGestureStore } from '@/hooks/useGesture';
 
 function App() {
-  const { user } = useAuthStore();
+  const { user, setUser } = useAuthStore();
   const { setTouchPositions, setScale, setRotation, setGestureStart, gestureStart } = useGestureStore();
   const [audioLoaded, setAudioLoaded] = useState(false);
+  const [isAuthChecked, setIsAuthChecked] = useState(false);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUser(user);
+      setIsAuthChecked(true);
+    });
+    return () => unsubscribe();
+  }, [setUser]);
 
   const handleAudioLoad = () => {
     setAudioLoaded(true);
@@ -65,6 +76,10 @@ function App() {
   const handleTouchEnd = useCallback(() => {
     setGestureStart(null);
   }, [setGestureStart]);
+
+  if (!isAuthChecked) {
+    return <div className="h-screen w-full bg-black text-white flex items-center justify-center">Loading...</div>;
+  }
 
   return (
     <div 
